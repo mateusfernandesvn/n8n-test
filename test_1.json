@@ -1,0 +1,232 @@
+{
+  "name": "test 1",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Test Adverse",
+        "formDescription": "Preencha esse formulário ...",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Nome completo",
+              "placeholder": "Informe seu nome ",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Email",
+              "fieldType": "email",
+              "placeholder": "Informe seu email",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Mensagem",
+              "fieldType": "textarea",
+              "placeholder": "Deixe sua mensagem "
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "cdb92c04-0361-4433-a8a7-d940ef34e358",
+      "name": "On form submission",
+      "webhookId": "e97276cc-d8c2-4a1b-969a-92cb2e57d1cd"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1I0IKRTOTvj_I8USuvs_Jcq18T99jKmm2P_Sybr_GcGo",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Página1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1I0IKRTOTvj_I8USuvs_Jcq18T99jKmm2P_Sybr_GcGo/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Nome": "={{ $json['Nome completo'] }}",
+            "Email": "={{ $json.Email }}",
+            "Mensagem": "={{ $json.Mensagem }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Nome",
+              "displayName": "Nome",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Mensagem",
+              "displayName": "Mensagem",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        220,
+        0
+      ],
+      "id": "173296f4-09ab-4682-901b-4319f27d4670",
+      "name": "Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Mtj1BB6xHyWcp6B6",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Informações do meu lead:\n\nNome: {{ $json.Nome }}\n\nMensagem:{{ $json.Mensagem }}",
+        "options": {
+          "systemMessage": "=Você ira receber as informações de um lead que preenchou o nosso formulário de aplicação.\n\nVocê deverar criar uma mensagem para esse lead , informando que logo logo iremos entrar em contato com o mesmo e agradecendo .\n\nO nome de minha empresa é Adverse CP"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        440,
+        0
+      ],
+      "id": "1fb33f28-6385-41a7-a805-0bab013cae7b",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "modelName": "=models/gemini-2.5-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        360,
+        200
+      ],
+      "id": "cf8b53b1-7d23-4825-9633-ed22abd7008b",
+      "name": "Google Gemini Chat Model",
+      "notesInFlow": false,
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Vpsy2Wli0glIArHt",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('On form submission').item.json.Email }}",
+        "subject": "Adverse CP",
+        "message": "={{ $json.output }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        800,
+        0
+      ],
+      "id": "b7be4bf6-1834-40c9-bc40-d36cc4a2076d",
+      "name": "Gmail",
+      "webhookId": "2f10d95c-8998-4b37-8b6b-9a70ae2f60c1",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "aplQ81TAzlDEhHBP",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Gmail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "eaaef05c-052b-404b-b47e-2230c37e4bcc",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "14082853301a493f768b2bc43172d93026796d6c3733e1cba27755298d7482e3"
+  },
+  "id": "bjS6vkBkL1EtyOJe",
+  "tags": []
+}

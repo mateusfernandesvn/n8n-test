@@ -1,0 +1,357 @@
+{
+  "name": "CONTRAT",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Soumission de Contrat",
+        "formDescription": "Remplissez le formulaire ci-dessous pour soumettre votre contrat de manière rapide et sécurisée. Veuillez vérifier toutes les informations avant l’envoi.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Nom completo",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Email",
+              "fieldType": "email",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "AHV"
+            },
+            {
+              "fieldLabel": "Adresse"
+            },
+            {
+              "fieldLabel": "Service",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "IA"
+                  },
+                  {
+                    "option": "Devops"
+                  },
+                  {
+                    "option": "Front-end"
+                  },
+                  {
+                    "option": "Automation"
+                  }
+                ]
+              },
+              "multiselect": true
+            },
+            {
+              "fieldLabel": "Descriptif des prestations"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "3e860035-e931-4836-bb92-9f0a270a5e27",
+      "name": "On form submission",
+      "webhookId": "3ea1e4a5-c11d-415f-8ae1-56c881ecd7b3"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "documentURL": "https://docs.google.com/document/d/1ldglJ-S1qSA5e2fff0GEtdktfeYnOGdRstE_9GSaA1Y/edit?usp=sharing"
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ],
+      "id": "3bdf148e-74de-457d-8df5-4f5bbb299042",
+      "name": "Get a document",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "hL5OjP95PUINZ5qr",
+          "name": "Google Docs account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "copy",
+        "fileId": {
+          "__rl": true,
+          "value": "1ldglJ-S1qSA5e2fff0GEtdktfeYnOGdRstE_9GSaA1Y",
+          "mode": "list",
+          "cachedResultName": "Contrato Template",
+          "cachedResultUrl": "https://docs.google.com/document/d/1ldglJ-S1qSA5e2fff0GEtdktfeYnOGdRstE_9GSaA1Y/edit?usp=drivesdk"
+        },
+        "name": "=contracter - {{ $('On form submission').item.json['Nom completo'] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        440,
+        0
+      ],
+      "id": "261ef46e-f50d-482c-98cb-96ec2f103e96",
+      "name": "Copy file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "aGdMvvZ50F6vGbkW",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentURL": "={{ $json.id }}",
+        "actionsUi": {
+          "actionFields": [
+            {
+              "action": "replaceAll",
+              "text": "{{nome_cliente}}",
+              "replaceText": "={{ $('On form submission').item.json['Nom completo'] }}"
+            },
+            {
+              "action": "replaceAll",
+              "text": "{{ahv}}",
+              "replaceText": "={{ $('On form submission').item.json.AHV }}"
+            },
+            {
+              "action": "replaceAll",
+              "text": "{{endereco_cliente}}",
+              "replaceText": "={{ $('On form submission').item.json.Adresse }}"
+            },
+            {
+              "action": "replaceAll",
+              "text": "{{descricao_servicos}}",
+              "replaceText": "={{ $('On form submission').item.json['Descriptif des prestations'] }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        660,
+        0
+      ],
+      "id": "0f381396-aa28-4c7f-8085-8f8075411861",
+      "name": "Update a document",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "hL5OjP95PUINZ5qr",
+          "name": "Google Docs account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "share",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.documentId }}",
+          "mode": "id"
+        },
+        "permissionsUi": {
+          "permissionsValues": {
+            "role": "reader",
+            "type": "anyone"
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        880,
+        0
+      ],
+      "id": "9c4aba3d-019a-4dcd-86f7-1e8b3361db70",
+      "name": "Share file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "aGdMvvZ50F6vGbkW",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "6c170754-7f44-41d0-884f-4d127e8bf395",
+              "leftValue": "={{ $('On form submission').item.json.Email }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1120,
+        0
+      ],
+      "id": "fbeba41e-fada-4795-a0f8-2aed793be870",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('On form submission').item.json.Email }}",
+        "subject": "Contrat précédent - Prestation de services",
+        "message": "=Bonjour {{ $('On form submission').item.json['Nom completo'] }},\n\nLe contrat de prestation de services est prêt. Je vous invite à le lire attentivement et à me faire savoir si vous avez des questions ou des remarques.\n\nMerci et à bientôt !\n\nAdverse CP\n\nLien:\n{{ 'https://docs.google.com/document/d/' + $('Update a document').item.json.documentId }}\n",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1420,
+        -180
+      ],
+      "id": "45d6d71c-ae04-458f-b5d0-a736d99f782a",
+      "name": "Send a message",
+      "webhookId": "f1116e11-ba06-483d-ba1e-2c502841116a",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "hjPrSvFJIFQmJQb7",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "",
+        "height": 960,
+        "width": 2220,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -320,
+        -360
+      ],
+      "typeVersion": 1,
+      "id": "f39fdf5e-51ac-4aa9-b3f3-8bf1bf04ada1",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "\n#  Automatisation du contrat",
+        "width": 540,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        500,
+        -280
+      ],
+      "typeVersion": 1,
+      "id": "a4f613f0-5fc3-4659-8bc9-25aad2565407",
+      "name": "Sticky Note1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Get a document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a document": {
+      "main": [
+        [
+          {
+            "node": "Copy file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Copy file": {
+      "main": [
+        [
+          {
+            "node": "Update a document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update a document": {
+      "main": [
+        [
+          {
+            "node": "Share file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Share file": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "c2779765-ab14-42b5-b2b5-fe456a76c98b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "711acf5db162102893671905bacca3b1e89df46d2bbf174974b9b0b3a49a2a6b"
+  },
+  "id": "sUQ7QteOQPAoeFiz",
+  "tags": []
+}
